@@ -1,0 +1,141 @@
+# 白盒测试技能
+name: white_box_testing
+description: 白盒测试技能，基于代码内部逻辑结构设计测试用例，使用条件组合覆盖和路径覆盖方法，条件过多时挑取边界条件进行覆盖
+version: 1.0.0
+
+author:
+  name: TestAgent
+  email: testagent@example.com
+
+tags:
+  - testing
+  - white-box
+  - structural
+  - coverage
+
+dependencies:
+  - read_file
+  - write_file
+  - execute_command
+
+capabilities:
+  - 分析代码的内部逻辑结构（控制流图、条件分支）
+  - 设计条件组合覆盖测试用例
+  - 设计路径覆盖测试用例
+  - 条件过多时智能选取边界条件进行覆盖
+  - 计算和报告测试覆盖率
+
+examples:
+  - description: 对用户验证函数进行白盒测试
+    input: "对 validateUser 函数进行白盒测试"
+    output: "分析条件分支，设计条件组合和路径覆盖测试用例，执行测试并报告覆盖率"
+
+  - description: 对复杂条件逻辑进行白盒测试
+    input: "对 processOrder 函数的多条件逻辑进行白盒测试"
+    output: "条件过多时选取边界条件，设计覆盖测试用例，执行测试并报告覆盖率"
+
+tool_instructions:
+  read_file:
+    description: 读取源代码分析内部逻辑结构
+    parameters:
+      file_path: 被测模块的源代码路径
+  write_file:
+    description: 编写白盒测试用例代码
+    parameters:
+      file_path: 测试文件输出路径
+      content: 白盒测试代码
+  execute_command:
+    description: 运行测试和覆盖率工具
+    parameters:
+      command: 运行测试或覆盖率分析的命令
+      working_dir: 项目工作目录
+
+prompt_templates:
+  condition_coverage: "对 {{function_name}} 中的条件 {{condition}} 进行条件组合覆盖，识别所有布尔组合"
+  path_coverage: "对 {{function_name}} 绘制控制流图，识别所有独立路径并设计测试用例"
+  boundary_condition: "条件 {{condition}} 组合过多（共 {{count}} 种），选取以下边界条件进行覆盖：{{selected_conditions}}"
+
+security_notes:
+  - 白盒测试关注代码逻辑，不应绕过安全检查
+  - 覆盖率数据仅作参考，不追求 100% 覆盖率而忽略测试质量
+  - 路径爆炸时优先覆盖关键业务路径
+
+config:
+  allowed_directories:
+    - "."
+    - "./tests"
+    - "./coverage"
+  max_file_size: 52428800
+  allowed_file_types:
+    - ".go"
+    - ".py"
+    - ".java"
+    - ".js"
+    - ".ts"
+    - ".c"
+    - ".cpp"
+    - ".rs"
+    - ".yaml"
+    - ".yml"
+    - ".json"
+
+workflow:
+  description: 白盒测试的完整工作流
+  steps:
+    - step: 1
+      name: 分析代码逻辑结构
+      description: 读取源代码，分析控制流和条件分支结构
+      actions:
+        - 使用 read_file 读取被测模块源代码
+        - 识别所有条件判断语句（if/else、switch、循环条件）
+        - 识别每个条件中的基本布尔条件（原子谓词）
+        - 构建控制流图（CFG），标注基本块和边
+        - 统计条件数量和路径数量
+
+    - step: 2
+      name: 条件组合覆盖设计
+      description: 对每个条件判断点进行条件组合覆盖分析
+      actions:
+        - 列出每个判断点中所有原子条件的真/假取值
+        - 生成所有可能的条件组合
+        - 当条件组合数超过阈值（如 2^n > 16）时，智能选取边界条件：
+          - 所有条件为真
+          - 所有条件为假
+          - 仅一个条件为假（逐个取反）
+          - 仅一个条件为真（逐个取真）
+          - 其他关键业务边界组合
+        - 为每个选中的条件组合设计测试输入
+        - 生成条件组合覆盖测试用例表
+
+    - step: 3
+      name: 路径覆盖设计
+      description: 基于控制流图设计路径覆盖测试用例
+      actions:
+        - 从控制流图中枚举所有独立执行路径
+        - 当路径数量过多时，优先选择：
+          - 包含最多条件判断的路径
+          - 包含错误处理逻辑的路径
+          - 关键业务逻辑路径
+          - 边界条件触发的路径
+        - 为每条选定路径回溯计算所需输入
+        - 生成路径覆盖测试用例表
+
+    - step: 4
+      name: 编写与执行测试
+      description: 将测试用例编码为可执行的测试程序并运行
+      actions:
+        - 整合条件组合覆盖和路径覆盖的测试用例
+        - 编写测试代码，确保每个测试用例可独立运行
+        - 使用 write_file 保存测试代码
+        - 使用 execute_command 编译测试程序
+        - 使用 execute_command 运行测试
+
+    - step: 5
+      name: 覆盖率分析与报告
+      description: 分析测试覆盖率，报告未覆盖的逻辑
+      actions:
+        - 使用 execute_command 运行覆盖率分析工具
+        - 统计条件组合覆盖率和路径覆盖率
+        - 识别未覆盖的条件组合和路径
+        - 评估未覆盖部分的风险
+        - 生成覆盖率报告

@@ -1,0 +1,143 @@
+# 黑盒测试技能
+name: black_box_testing
+description: 黑盒测试技能，基于功能规格说明设计测试用例，编写 driver 和 stub，使用等价类划分、边界值分析、判定表等方法进行测试
+version: 1.0.0
+
+author:
+  name: TestAgent
+  email: testagent@example.com
+
+tags:
+  - testing
+  - black-box
+  - functional
+
+dependencies:
+  - read_file
+  - write_file
+  - execute_command
+
+capabilities:
+  - 编写测试 driver（驱动模块）用于调用被测模块
+  - 编写测试 stub（桩模块）用于替代被测模块的依赖
+  - 使用等价类划分法设计测试用例（有效等价类和无效等价类）
+  - 使用边界值分析法设计测试用例（边界条件和临界值）
+  - 使用判定表法设计测试用例（多条件组合场景）
+  - 执行黑盒测试并收集结果
+
+examples:
+  - description: 对用户登录模块进行黑盒测试
+    input: "对 login 模块进行黑盒测试"
+    output: "编写 driver 调用 login，设计等价类和边界值测试用例，执行测试并输出结果"
+
+  - description: 对文件读取功能进行黑盒测试
+    input: "对 readFile 函数进行黑盒测试"
+    output: "编写 driver 和 stub，设计判定表覆盖各种输入组合，执行测试并输出结果"
+
+tool_instructions:
+  read_file:
+    description: 读取模块的接口定义和功能规格说明
+    parameters:
+      file_path: 模块源代码或文档路径
+  write_file:
+    description: 编写 driver、stub 和测试用例代码
+    parameters:
+      file_path: 测试文件输出路径
+      content: driver/stub/测试用例代码
+  execute_command:
+    description: 编译和运行测试
+    parameters:
+      command: 编译或运行测试命令
+      working_dir: 项目工作目录
+
+prompt_templates:
+  driver_template: "为 {{module_name}} 模块编写 driver：创建驱动程序，构造测试输入，调用被测模块接口，收集输出结果"
+  stub_template: "为 {{module_name}} 模块的依赖 {{dependency}} 编写 stub：模拟依赖模块的行为，返回预设的测试数据"
+  equivalence_class: "对 {{function_name}} 的 {{parameter}} 参数进行等价类划分：有效等价类为 {{valid_classes}}，无效等价类为 {{invalid_classes}}"
+  boundary_value: "对 {{function_name}} 的 {{parameter}} 参数进行边界值分析：边界值为 {{boundary_values}}"
+  decision_table: "对 {{function_name}} 构建判定表：条件为 {{conditions}}，动作为 {{actions}}"
+
+security_notes:
+  - driver 不应包含对生产环境的直接访问
+  - stub 应仅返回预设测试数据，不执行真实逻辑
+  - 测试输入应避免注入攻击向量
+
+config:
+  allowed_directories:
+    - "."
+    - "./tests"
+    - "./test_drivers"
+    - "./test_stubs"
+  max_file_size: 52428800
+  allowed_file_types:
+    - ".go"
+    - ".py"
+    - ".java"
+    - ".js"
+    - ".ts"
+    - ".c"
+    - ".cpp"
+    - ".rs"
+    - ".yaml"
+    - ".yml"
+    - ".json"
+
+workflow:
+  description: 黑盒测试的完整工作流
+  steps:
+    - step: 1
+      name: 分析模块接口与功能规格
+      description: 读取被测模块的接口定义，理解输入输出规格和功能要求
+      actions:
+        - 使用 read_file 读取被测模块源代码
+        - 识别模块的公共接口（函数签名、参数类型、返回值）
+        - 理解每个接口的功能规格和预期行为
+        - 列出模块的所有外部依赖
+
+    - step: 2
+      name: 编写 Driver 和 Stub
+      description: 为被测模块编写驱动模块和桩模块
+      actions:
+        - 编写 driver：构造测试输入，调用被测模块接口，收集和验证输出
+        - 识别需要 stub 的依赖模块
+        - 为每个依赖编写 stub：模拟依赖行为，返回预设测试数据
+        - 使用 write_file 保存 driver 和 stub 代码
+
+    - step: 3
+      name: 等价类划分
+      description: 对每个输入参数进行等价类划分，生成测试用例
+      actions:
+        - 识别每个接口参数的输入域
+        - 划分有效等价类（符合规格的合法输入）
+        - 划分无效等价类（违反规格的非法输入）
+        - 为每个等价类选择代表性测试数据
+        - 生成等价类测试用例表
+
+    - step: 4
+      name: 边界值分析
+      description: 对输入参数的边界条件进行测试用例设计
+      actions:
+        - 识别每个参数的边界值（最小值、最大值、临界值）
+        - 选取边界值及其邻近值作为测试数据
+        - 特别关注空值、零值、溢出等特殊边界
+        - 生成边界值测试用例表
+
+    - step: 5
+      name: 判定表设计
+      description: 对多条件组合场景构建判定表，确保组合覆盖
+      actions:
+        - 识别影响输出的所有条件（输入条件、状态条件）
+        - 列出条件的所有可能组合
+        - 为每种条件组合确定预期输出（动作）
+        - 构建判定表
+        - 基于判定表生成测试用例
+
+    - step: 6
+      name: 编写与执行测试
+      description: 将所有测试用例编码为可执行的测试程序并运行
+      actions:
+        - 将等价类、边界值、判定表的测试用例整合
+        - 编写测试代码，调用 driver 执行每个测试用例
+        - 使用 execute_command 编译测试程序
+        - 使用 execute_command 运行测试
+        - 收集测试结果（通过/失败、实际输出 vs 预期输出）

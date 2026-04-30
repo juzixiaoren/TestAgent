@@ -1,0 +1,145 @@
+# 测试技能 - 代码测试总技能
+name: code_testing
+description: 代码测试技能，按模块拆分对代码进行全面测试，依次执行黑盒测试、白盒测试、集成测试和系统测试，输出测试报告和修改方案，等待用户确认后再执行修改
+version: 1.0.0
+
+author:
+  name: TestAgent
+  email: testagent@example.com
+
+tags:
+  - testing
+  - code-quality
+  - validation
+
+dependencies:
+  - read_file
+  - write_file
+  - execute_command
+
+capabilities:
+  - 按模块拆分代码进行测试
+  - 编排黑盒测试、白盒测试、集成测试和系统测试的执行流程
+  - 汇总各阶段测试结果，生成测试报告
+  - 根据测试结果提出代码修改方案
+  - 等待用户确认后再执行代码修改
+
+examples:
+  - description: 对指定项目进行完整测试
+    input: "测试 ./src 目录下的代码"
+    output: "按模块拆分后，依次执行黑盒测试→白盒测试→集成测试→系统测试，输出测试报告和修改方案"
+
+  - description: 对单个模块进行测试
+    input: "测试 user 模块"
+    output: "对该模块执行黑盒、白盒、集成测试，输出测试报告和修改方案"
+
+tool_instructions:
+  read_file:
+    description: 读取源代码文件以分析模块结构和逻辑
+    parameters:
+      file_path: 要测试的源代码文件路径
+  write_file:
+    description: 编写测试用例文件和测试报告
+    parameters:
+      file_path: 测试文件或报告的输出路径
+      content: 测试代码或报告内容
+  execute_command:
+    description: 执行编译、运行测试等命令
+    parameters:
+      command: 编译或运行测试的命令
+      working_dir: 项目工作目录
+
+prompt_templates:
+  test_request: "请对 {{target}} 进行全面测试，按模块拆分后依次执行黑盒测试、白盒测试、集成测试和系统测试"
+  report_request: "请根据测试结果生成测试报告和修改方案"
+
+security_notes:
+  - 测试应在隔离环境中运行，避免影响生产代码
+  - 测试用例不应包含真实的生产数据
+  - 修改代码前必须获得用户确认
+
+config:
+  allowed_directories:
+    - "."
+    - "./src"
+    - "./tests"
+    - "./reports"
+  max_file_size: 52428800
+  allowed_file_types:
+    - ".go"
+    - ".py"
+    - ".java"
+    - ".js"
+    - ".ts"
+    - ".c"
+    - ".cpp"
+    - ".rs"
+    - ".yaml"
+    - ".yml"
+    - ".json"
+    - ".md"
+    - ".txt"
+
+workflow:
+  description: 代码测试的完整工作流，按模块拆分后逐步执行各级测试
+  steps:
+    - step: 1
+      name: 模块拆分与代码分析
+      description: 读取并分析待测试的代码，识别模块边界和接口，拆分为可独立测试的模块
+      actions:
+        - 使用 read_file 读取源代码文件
+        - 分析代码结构，识别模块、类、函数的划分
+        - 识别模块间的依赖关系和接口
+        - 输出模块拆分清单和依赖关系图
+
+    - step: 2
+      name: 黑盒测试
+      description: 对每个模块进行黑盒测试，基于功能规格设计测试用例
+      use_skill: black_box_testing
+      actions:
+        - 对每个模块编写 driver 和 stub（如需要）
+        - 设计等价类划分、边界值分析和判定表
+        - 基于测试用例编写并执行黑盒测试
+        - 收集黑盒测试结果
+
+    - step: 3
+      name: 白盒测试
+      description: 对每个模块进行白盒测试，基于代码逻辑结构设计测试用例
+      use_skill: white_box_testing
+      actions:
+        - 分析每个模块的内部逻辑结构
+        - 设计条件组合覆盖和路径覆盖测试用例
+        - 条件过多时挑选边界条件进行覆盖
+        - 编写并执行白盒测试
+        - 收集白盒测试结果
+
+    - step: 4
+      name: 集成测试
+      description: 对模块间的接口和协作进行集成测试
+      use_skill: integration_testing
+      actions:
+        - 使用自顶向下方法逐步集成测试（逐步追加 stub）
+        - 使用自底向上方法逐步集成测试（逐步追加 driver）
+        - 验证模块间接口的正确性
+        - 收集集成测试结果
+
+    - step: 5
+      name: 系统测试
+      description: 对整个系统进行端到端测试，验证系统整体满足功能和非功能需求
+      use_skill: system_testing
+      actions:
+        - 验证系统整体功能需求
+        - 验证非功能需求（性能、安全性、可靠性等）
+        - 执行端到端测试场景
+        - 收集系统测试结果
+
+    - step: 6
+      name: 生成测试报告与修改方案
+      description: 汇总所有测试结果，生成完整测试报告和代码修改方案
+      actions:
+        - 汇总黑盒、白盒、集成、系统测试的所有结果
+        - 统计测试覆盖率、通过率等指标
+        - 识别缺陷并按严重程度分级
+        - 生成测试报告（包含各阶段结果、缺陷列表、覆盖率统计）
+        - 提出代码修改方案
+        - 等待用户确认后再执行修改
