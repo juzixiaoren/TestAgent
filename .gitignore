@@ -1,52 +1,9 @@
-# 依赖目录
-vendor/
-
-# 构建输出
-*.exe
-*.exe~
-*.dll
-*.so
-*.dylib
-
-# 测试二进制文件
-*.test
-
-# 输出目录
-out/
-dist/
-
-# 依赖文件
-go.sum
-
-# 环境变量文件
 .env
-.env.local
-.env.*.local
-
-# 敏感数据文件
-*.pem
-*.key
-*.crt
-
-# 编辑器文件
-.vscode/
-.idea/
-*.swp
-*.swo
-*~
-
-# 操作系统文件
-.DS_Store
-Thumbs.db
-
-# 日志文件
-*.log
-
-# 临时文件
-/tmp
-
-# 配置文件备份
-*.bak
-
-# 对话状态文件（可能包含敏感信息）
 conversation_state.json
+reports/
+__pycache__/
+*.pyc
+.pytest_cache/
+.DS_Store
+.vscode/
+/__pycache__

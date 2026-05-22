@@ -1,0 +1,65 @@
+name: tool_interface
+version: 1.0.0
+description: 工具接口规范技能，说明 Agent 如何通过 read_file、write_file、execute_command 与文件系统和被测程序交互。
+
+author:
+  name: TestAgent
+  email: testagent@example.com
+
+tags:
+  - tool
+  - interface
+  - agent
+  - testing
+
+dependencies:
+  - read_file
+  - write_file
+  - execute_command
+
+capabilities:
+  - 使用 read_file 读取规格、源码、测试输入、AST、HTML、日志和报告
+  - 使用 write_file 写入测试计划、测试用例、测试记录、复现用例和最终报告
+  - 使用 execute_command 创建目录、运行被测程序、执行测试命令和进行轻量检查
+  - 对每次工具调用记录目的、参数、返回码、输出和后续判断
+  - 不凭空编造命令结果；必须基于工具返回判断测试是否成功
+
+tool_instructions:
+  read_file:
+    description: 读取一个文本文件。不要用 read_file 读取目录；需要目录结构时使用 execute_command 执行跨平台列目录命令。
+    parameters:
+      file_path: 要读取的文件路径，可以是相对路径或绝对路径
+  write_file:
+    description: 写入或覆盖文本文件。用于保存测试用例、测试计划、执行记录、复现用例和报告。
+    parameters:
+      file_path: 要写入的文件路径
+      content: 文件内容
+  execute_command:
+    description: 执行系统命令。优先使用跨平台 Python 命令；在 Windows 上避免依赖 bash 专属命令。
+    parameters:
+      command: 要执行的命令
+      working_dir: 命令执行目录，通常为项目根目录
+      timeout_seconds: 超时时间，普通命令 10-30 秒，批量测试 60 秒以内
+      shell: 可选 shell，可用 auto、cmd、powershell、pwsh、bash、sh
+
+security_notes:
+  - 不执行删除仓库、清空目录、修改系统配置、访问凭据等危险命令
+  - 不读取或输出 .env、API key、个人凭据等敏感信息
+  - 测试产物优先写入 reports/ 目录
+  - 命令失败时先分析返回码、stdout、stderr，再选择替代命令
+
+workflow:
+  description: 工具交互通用流程
+  steps:
+    - step: 1
+      name: 明确目的
+      description: 调用工具前说明要读取、写入或执行什么，以及为什么需要该工具
+    - step: 2
+      name: 执行工具
+      description: 使用最小必要参数调用工具，命令设置合理超时时间
+    - step: 3
+      name: 解释结果
+      description: 工具返回后读取 success、exit_code、output、error 等字段，决定下一步
+    - step: 4
+      name: 记录证据
+      description: 重要测试动作应写入 reports/ 下的测试记录或最终报告

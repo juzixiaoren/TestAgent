@@ -1,0 +1,115 @@
+name: flexmd_agentic_testing
+version: 1.0.0
+description: FlexMD 专用测试任务编排技能。该技能将 FlexMD 被测对象技能与通用黑盒、白盒、集成、系统测试技能组合起来，指导 Agent 完成一次端到端测试任务。
+
+author:
+  name: TestAgent
+  email: testagent@example.com
+
+tags:
+  - flexmd
+  - testing
+  - agentic-testing
+  - skill-orchestration
+
+dependencies:
+  - read_file
+  - write_file
+  - execute_command
+  - tool_interface
+  - flexmd_program
+  - black_box_testing
+  - white_box_testing
+  - integration_testing
+  - system_testing
+
+capabilities:
+  - 根据自然语言任务识别用户希望测试 FlexMD
+  - 调用 flexmd_program 理解被测对象、规格和 CLI 接口
+  - 依次按照 black_box_testing、white_box_testing、integration_testing、system_testing 的思想设计测试
+  - 自主编写 .fmd 测试用例，而不是等待用户提供具体输入
+  - 调用 FlexMD 编译器执行每个测试用例
+  - 读取 AST/HTML/返回码/错误信息分析测试结果
+  - 将测试计划、用例、执行记录、失败分析和报告保存到 reports/flexmd_agent_session/
+  - 在修改源码前先完成测试报告和修改建议，等待用户确认
+
+tool_instructions:
+  read_file:
+    description: 读取规格、源码、AST、HTML、测试记录和报告
+    parameters:
+      file_path: 文件路径
+  write_file:
+    description: 写入测试计划、.fmd 用例、预期说明、测试结果、缺陷分析和最终报告
+    parameters:
+      file_path: 文件路径
+      content: 文件内容
+  execute_command:
+    description: 创建目录、列出文件、执行 FlexMD 编译器和辅助检查命令
+    parameters:
+      command: 命令文本
+      working_dir: 项目根目录
+      timeout_seconds: 超时时间
+
+workflow:
+  description: FlexMD 四类测试一条龙流程
+  steps:
+    - step: 1
+      name: 理解被测对象
+      description: 读取 FlexMD 规格和源码，明确语言特性、命令行接口、AST/HTML 输出和正确性标准
+      use_skill: flexmd_program
+      actions:
+        - 读取 skill_custom/flex_md/flexmd_spec.md
+        - 读取 flexmd/compiler.py 和 flexmd/__main__.py
+        - 创建 reports/flexmd_agent_session/ 目录结构
+        - 写入 reports/flexmd_agent_session/01_test_plan.md
+
+    - step: 2
+      name: 黑盒测试
+      description: 只依据 FlexMD 规格设计测试，不依赖源码内部实现
+      use_skill: black_box_testing
+      actions:
+        - 设计并写入不少于 10 个黑盒 .fmd 用例
+        - 覆盖基础 Markdown、分页、连续分页、横向/纵向 flex、空 pane、比例、嵌套、代码块隔离和非法输入
+        - 执行每个用例并记录 AST/HTML/返回码/错误信息
+
+    - step: 3
+      name: 白盒测试
+      description: 阅读源码后根据 parser 状态、代码块状态、flex 栈、ratio 解析和错误路径设计测试
+      use_skill: white_box_testing
+      actions:
+        - 设计并写入不少于 10 个白盒 .fmd 用例
+        - 说明每个用例覆盖的函数、分支或状态路径
+        - 执行每个用例并记录结果
+
+    - step: 4
+      name: 集成测试
+      description: 验证 parser、AST、renderer 和 CLI 的组合链路
+      use_skill: integration_testing
+      actions:
+        - 设计源文本到 AST 再到 HTML 的组合用例
+        - 检查 AST 与 HTML 的一致性
+        - 记录集成链路中的问题
+
+    - step: 5
+      name: 系统测试
+      description: 从用户角度验证 .fmd 文件到可展示 HTML 幻灯片的端到端流程
+      use_skill: system_testing
+      actions:
+        - 使用 samples 或 Agent 自写综合用例执行完整编译
+        - 检查输出文件生成、HTML 结构、CSS 样式和可展示性
+        - 记录系统级测试结果
+
+    - step: 6
+      name: 失败复现与分析
+      description: 对失败用例构造最小复现和相邻验证用例
+      actions:
+        - 失败复现保存到 reports/flexmd_agent_session/repro/
+        - 缺陷分析保存到 reports/flexmd_agent_session/03_bug_analysis.md
+        - 暂不修改源码，除非用户明确确认
+
+    - step: 7
+      name: 生成总报告
+      description: 汇总四类测试、工具调用证据、用例、结果、失败分析和后续建议
+      actions:
+        - 写入 reports/flexmd_agent_session/final_report.md
+        - 报告包含测试范围、测试方法、用例列表、执行命令、结果表、失败复现、可能原因和回归建议

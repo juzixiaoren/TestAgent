@@ -1,0 +1,61 @@
+name: flexmd_program
+version: 1.0.0
+description: FlexMD 被测对象说明与交互规范。该技能描述 FlexMD 的语言规格、源码位置、命令行接口、输入输出文件和结果判定方式。
+
+author:
+  name: TestAgent
+  email: testagent@example.com
+
+tags:
+  - flexmd
+  - program
+  - markdown
+  - dsl
+  - compiler
+  - interface
+
+dependencies:
+  - read_file
+  - write_file
+  - execute_command
+
+capabilities:
+  - 理解 FlexMD 是支持分页和 flex 分栏的 Markdown 幻灯片 DSL
+  - 根据 skill_custom/flex_md/flexmd_spec.md 判断 FlexMD 语法和输出是否正确
+  - 使用 CLI 将 .fmd 文件编译为 HTML 和 AST JSON
+  - 检查 AST 中的 slides、flex、panes、direction、ratios 等结构
+  - 检查 HTML 中的 slide、flex-direction、flex-grow、overflow/scrollbar 等样式
+  - 区分合法输入、非法输入、预期成功和预期失败
+
+tool_instructions:
+  read_file:
+    description: 读取 FlexMD 规格、源码、AST 和 HTML 输出
+    parameters:
+      file_path: 重点文件包括 skill_custom/flex_md/flexmd_spec.md、flexmd/compiler.py、flexmd/__main__.py、输出的 .ast.json 和 .html
+  write_file:
+    description: 写入 .fmd 测试输入和测试说明
+    parameters:
+      file_path: 测试输入应保存到 reports/flexmd_agent_session/cases/ 下
+      content: .fmd 文档内容或 Markdown 报告内容
+  execute_command:
+    description: 调用 FlexMD 命令行编译器或执行轻量检查命令
+    parameters:
+      command: 标准编译命令是 python -m flexmd compile <input.fmd> -o <output.html> --ast <output.ast.json>
+      working_dir: 项目根目录
+      timeout_seconds: 建议 10-30 秒
+
+workflow:
+  description: FlexMD 被测程序理解流程
+  steps:
+    - step: 1
+      name: 读取规格
+      description: 使用 read_file 读取 skill_custom/flex_md/flexmd_spec.md，该文件是 FlexMD 正确性判定的权威来源
+    - step: 2
+      name: 读取源码
+      description: 使用 read_file 读取 flexmd/compiler.py 和 flexmd/__main__.py，理解 parser、AST、renderer 和 CLI
+    - step: 3
+      name: 明确接口
+      description: 确认输入为 .fmd 文件，输出为 HTML 和 AST JSON，命令行为 python -m flexmd compile
+    - step: 4
+      name: 明确判定标准
+      description: 通过 AST 结构、HTML 样式、退出码和错误信息判断测试结果

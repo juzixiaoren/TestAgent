@@ -1,0 +1,28 @@
+# FlexMD Demo
+A small Markdown presentation with nested flex layout.
+---
+\h 1:2
+# Left Pane
+This pane should take one unit.
+---
+# Right Pane
+This pane should take two units.
+\\h
+---
+\v 2:1
+\h 1:1
+1. generated tests
+2. AST oracle
+---
+# Nested title
+text
+\\h
+---
+```python
+print("--- inside code fence is literal")
+print("\\h is also literal")
+```
+\\v
+---
+---
+# Slide after an empty slide
